@@ -1,0 +1,13 @@
+redis:
+  image: redis:7
+
+backend:
+  image: pixelwar-backend
+  replicas: 2
+
+frontend:
+  image: pixelwar-frontend
+  replicas: 2
+
+ingress:
+  host: localhost
