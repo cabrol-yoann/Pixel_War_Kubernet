@@ -16,5 +16,12 @@ spec:
       - name: backend
         image: {{ .Values.backend.image }}
         imagePullPolicy: IfNotPresent
+
         ports:
         - containerPort: 80
+
+        env:
+        - name: REDIS_HOST
+          value: redis
+        - name: REDIS_PORT
+          value: "6379"

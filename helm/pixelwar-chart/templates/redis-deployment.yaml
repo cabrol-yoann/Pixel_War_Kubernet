@@ -16,5 +16,19 @@ spec:
       - name: redis
         image: {{ .Values.redis.image }}
         imagePullPolicy: IfNotPresent
+
         ports:
         - containerPort: 6379
+
+        args:
+        - "--appendonly"
+        - "yes"
+
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+
+      volumes:
+      - name: redis-data
+        persistentVolumeClaim:
+          claimName: redis-pvc
