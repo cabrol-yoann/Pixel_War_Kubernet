@@ -2,11 +2,11 @@ redis:
   image: redis:7
 
 backend:
-  image: pixelwar-backend
+  image: flyzeur163/pixelwar-backend
   replicas: 2
 
 frontend:
-  image: pixelwar-frontend
+  image: flyzeur163/pixelwar-frontend
   replicas: 2
 
 ingress:
