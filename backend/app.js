@@ -55,8 +55,7 @@ io.on("connection", async (socket) => {
 
   socket.on("pixel", async ({ index, color }) => {
     if (index < 0 || index >= SIZE * SIZE) return;
-
-    // ⚠️ SAFE UPDATE
+    
     const grid = JSON.parse(await redis.get(GRID_KEY));
 
     grid[index] = color;
