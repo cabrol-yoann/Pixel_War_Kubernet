@@ -20,7 +20,7 @@ spec:
           service:
             name: frontend-svc
             port:
-              number: 80
+              number: {{ .Values.frontend.port }}
 
       - path: /socket.io
         pathType: Prefix
@@ -28,7 +28,7 @@ spec:
           service:
             name: backend
             port:
-              number: 80
+              number: {{ .Values.backend.port }}
 
       - path: /api
         pathType: Prefix
@@ -36,4 +36,4 @@ spec:
           service:
             name: backend
             port:
-              number: 80
+              number: {{ .Values.backend.port }}
