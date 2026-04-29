@@ -4,36 +4,40 @@ metadata:
   name: backend
 spec:
   replicas: {{ .Values.backend.replicas }}
+
   selector:
     matchLabels:
       app: backend
+
   template:
     metadata:
       labels:
         app: backend
+
     spec:
       containers:
-      - name: backend
-        image: {{ .Values.backend.image }}
-        imagePullPolicy: IfNotPresent
+        - name: backend
+          image: {{ .Values.backend.image }}
+          imagePullPolicy: Always
 
-        ports:
-        - containerPort: {{ .Values.backend.port }}
+          ports:
+            - containerPort: {{ .Values.backend.port }}
 
-        env:
-        - name: REDIS_HOST
-          valueFrom:
-            configMapKeyRef:
-              name: backend-config
-              key: REDIS_HOST
+          env:
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: REDIS_HOST
 
-        - name: REDIS_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: backend-config
-              key: REDIS_PORT
-        - name: REDIS_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: redis-secret
-              key: password
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: REDIS_PORT
+
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: password

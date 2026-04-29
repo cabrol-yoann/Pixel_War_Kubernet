@@ -6,34 +6,38 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
-    nginx.ingress.kubernetes.io/enable-websockets: "true"
-    nginx.ingress.kubernetes.io/websocket-services: backend
+
 spec:
   ingressClassName: nginx
+
   rules:
-  - host: {{ .Values.ingress.host }}
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: frontend-svc
-            port:
-              number: {{ .Values.frontend.port }}
+    - host: localhost
+      http:
+        paths:
 
-      - path: /socket.io
-        pathType: Prefix
-        backend:
-          service:
-            name: backend
-            port:
-              number: {{ .Values.backend.port }}
+          # FRONTEND
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80
 
-      - path: /api
-        pathType: Prefix
-        backend:
-          service:
-            name: backend
-            port:
-              number: {{ .Values.backend.port }}
+          # SOCKET.IO
+          - path: /socket.io
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 80
+
+          # API
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 80
