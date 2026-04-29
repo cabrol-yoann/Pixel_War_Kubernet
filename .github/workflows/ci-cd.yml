@@ -81,6 +81,7 @@ jobs:
 
     env:
       TAG: ${{ needs.build-and-push.outputs.tag }}
+      REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
 
     steps:
       - name: Checkout code
@@ -103,7 +104,8 @@ jobs:
             --namespace pixelwar `
             --create-namespace `
             --set backend.image=${{ secrets.DOCKERHUB_USERNAME }}/pixelwar-backend:${{ env.TAG }} `
-            --set frontend.image=${{ secrets.DOCKERHUB_USERNAME }}/pixelwar-frontend:${{ env.TAG }}
+            --set frontend.image=${{ secrets.DOCKERHUB_USERNAME }}/pixelwar-frontend:${{ env.TAG }} `
+            --set redis.auth.password=${{ env.REDIS_PASSWORD }}
 
       # -------------------------
       # CHECK DEPLOYMENT
