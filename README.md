@@ -384,8 +384,6 @@ Le projet applique une approche DevOps sécurisée :
 - Gestion des secrets Kubernetes
 - Configuration du self-hosted runner Windows
 - Debug des erreurs CreateContainerConfigError
-- Synchronisation CI/CD + cluster local
-- Configuration Helm multi-environnements
 
 ---
 
