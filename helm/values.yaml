@@ -18,7 +18,7 @@ redis:
     password: ""
 
 backend:
-  image: flyzeur163/pixelwar-backend
+  image: ""
   replicas: 2
   port: 80
   resources:
@@ -30,7 +30,7 @@ backend:
       memory: "256Mi"
 
 frontend:
-  image: flyzeur163/pixelwar-frontend
+  image: ""
   replicas: 2
   port: 80
   resources:
