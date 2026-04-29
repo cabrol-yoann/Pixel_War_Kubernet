@@ -70,6 +70,7 @@ jobs:
           echo "Frontend: ${{ secrets.DOCKERHUB_USERNAME }}/$FRONTEND_IMAGE:$TAG"
 
   bootstrap:
+    needs: build-and-push
     runs-on: self-hosted
 
     steps:

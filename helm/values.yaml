@@ -8,7 +8,6 @@ redis:
 
   auth:
     enabled: true
-    password: "changemoi"
 
 backend:
   image: flyzeur163/pixelwar-backend
