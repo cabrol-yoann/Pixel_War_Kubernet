@@ -69,8 +69,25 @@ jobs:
           echo "Backend: ${{ secrets.DOCKERHUB_USERNAME }}/$BACKEND_IMAGE:$TAG"
           echo "Frontend: ${{ secrets.DOCKERHUB_USERNAME }}/$FRONTEND_IMAGE:$TAG"
 
+  bootstrap:
+    runs-on: self-hosted
+
+    steps:
+      - name: Create Kind cluster
+        shell: pwsh
+        run: |
+          kind get clusters | Select-String "pixelwar-cluster"
+          if ($LASTEXITCODE -ne 0) {
+            kind create cluster --config ./k8s/kind-config.yaml
+          }
+
+      - name: Install Ingress Nginx
+        shell: pwsh
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.2/deploy/static/provider/cloud/deploy.yaml
+
   deploy:
-    needs: build-and-push
+    needs: [build-and-push, bootstrap]
     runs-on: self-hosted
 
     steps:
