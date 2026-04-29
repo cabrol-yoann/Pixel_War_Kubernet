@@ -1,0 +1,58 @@
+
+# =========================
+# SELF-HOSTED RUNNER
+# =========================
+actions-runner/
+runner/
+*.runner
+*.credentials*
+*.env.runner
+
+# =========================
+# KUBERNETES / KUBECONFIG
+# =========================
+.kube/
+kubeconfig
+*.kubeconfig
+
+# =========================
+# NODE / FRONTEND
+# =========================
+node_modules/
+dist/
+build/
+
+# =========================
+# BACKEND
+# =========================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =========================
+# DOCKER
+# =========================
+*.tar
+*.tar.gz
+
+# =========================
+# ENV FILES (IMPORTANT)
+# =========================
+.env
+.env.local
+.env.production
+
+# =========================
+# IDE / OS
+# =========================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# =========================
+# HELM TEMP FILES
+# =========================
+*.lock
+charts/*/charts
+charts/*/tmp
