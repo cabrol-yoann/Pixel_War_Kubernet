@@ -1,6 +1,6 @@
 const socket = io({
   path: "/socket.io",
-  transports: ["websocket", "polling"]
+  transports: ["websocket"]
 });
 
 const SIZE = 100;

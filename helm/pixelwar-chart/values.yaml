@@ -13,30 +13,15 @@ redis:
 backend:
   image: flyzeur163/pixelwar-backend
   replicas: 2
-  resources:
-    requests:
-      cpu: "100m"
-      memory: "128Mi"
-    limits:
-      cpu: "300m"
-      memory: "256Mi"
   port: 80
-  policy:
-    enabled: false
 
 frontend:
   image: flyzeur163/pixelwar-frontend
   replicas: 2
-  resources:
-    requests:
-      cpu: "50m"
-      memory: "64Mi"
-    limits:
-      cpu: "200m"
-      memory: "128Mi"
   port: 80
 
 ingress:
-  enabled: true
   host: localhost
-  path: /
+
+networkPolicy:
+  enabled: true

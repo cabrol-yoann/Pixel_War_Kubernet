@@ -4,40 +4,40 @@ metadata:
   name: redis
 spec:
   replicas: 1
+
   selector:
     matchLabels:
       app: redis
+
   template:
     metadata:
       labels:
         app: redis
+
     spec:
       containers:
-      - name: redis
-        image: {{ .Values.redis.image }}
-        imagePullPolicy: IfNotPresent
+        - name: redis
+          image: {{ .Values.redis.image }}
+          imagePullPolicy: IfNotPresent
 
-        ports:
-        - containerPort: {{ .Values.redis.port }}
+          ports:
+            - containerPort: {{ .Values.redis.port }}
 
-        args:
-          - "--appendonly"
-          - "yes"
-          - "--requirepass"
-          - "$(REDIS_PASSWORD)"
+          args:
+            - "--appendonly"
+            - "yes"
+            - "--requirepass"
+            - "changemoi"
 
-        env:
-        - name: REDIS_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: redis-secret
-              key: password
+          env:
+            - name: REDIS_PASSWORD
+              value: "changemoi"
 
-        volumeMounts:
-        - name: redis-data
-          mountPath: /data
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
 
       volumes:
-      - name: redis-data
-        persistentVolumeClaim:
-          claimName: redis-pvc
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: redis-pvc

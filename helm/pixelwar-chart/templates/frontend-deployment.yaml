@@ -15,6 +15,6 @@ spec:
       containers:
       - name: frontend
         image: {{ .Values.frontend.image }}
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: {{ .Values.frontend.port }}
