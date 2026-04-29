@@ -68,7 +68,7 @@ jobs:
           echo "Build & Push completed"
           echo "Backend: ${{ secrets.DOCKERHUB_USERNAME }}/$BACKEND_IMAGE:$TAG"
           echo "Frontend: ${{ secrets.DOCKERHUB_USERNAME }}/$FRONTEND_IMAGE:$TAG"
-  
+
   deploy:
     needs: build-and-push
     runs-on: self-hosted
@@ -81,23 +81,26 @@ jobs:
       # VERIFY CLUSTER ACCESS
       # -------------------------
       - name: Check Kubernetes
+        shell: pwsh
         run: kubectl get nodes
 
       # -------------------------
       # HELM DEPLOY
       # -------------------------
-      - name: Deploy Pixel War
+      - name: Deploy Pixel War (Helm)
+        shell: pwsh
         run: |
-          helm upgrade --install pixelwar ./helm \
-            --namespace pixelwar \
-            --create-namespace \
-            --set backend.image=${{ secrets.DOCKERHUB_USERNAME }}/pixelwar-backend:latest \
+          helm upgrade --install pixelwar ./helm `
+            --namespace pixelwar `
+            --create-namespace `
+            --set backend.image=${{ secrets.DOCKERHUB_USERNAME }}/pixelwar-backend:latest `
             --set frontend.image=${{ secrets.DOCKERHUB_USERNAME }}/pixelwar-frontend:latest
 
       # -------------------------
       # CHECK DEPLOYMENT
       # -------------------------
       - name: Verify deployment
+        shell: pwsh
         run: |
           kubectl get pods -n pixelwar
           kubectl get svc -n pixelwar
