@@ -21,12 +21,12 @@ spec:
           imagePullPolicy: Always
 
           readinessProbe:
-          httpGet:
-            path: /grid
-            port: {{ .Values.backend.port }}
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          failureThreshold: 3
+            httpGet:
+              path: /grid
+              port: {{ .Values.backend.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 3
 
           livenessProbe:
             httpGet:

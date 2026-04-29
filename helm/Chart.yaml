@@ -1,4 +1,4 @@
-apiVersion: v2
+apiVersion: v1
 name: pixelwar
 description: Pixel War K8s projet (ESGI exam)
 type: application
