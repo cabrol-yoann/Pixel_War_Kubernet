@@ -6,6 +6,14 @@ redis:
     enabled: true
     size: 1Gi
 
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "200m"
+      memory: "128Mi"
+
   auth:
     password: ""
 
@@ -13,11 +21,25 @@ backend:
   image: flyzeur163/pixelwar-backend
   replicas: 2
   port: 80
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "256Mi"
 
 frontend:
   image: flyzeur163/pixelwar-frontend
   replicas: 2
   port: 80
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "200m"
+      memory: "128Mi"
 
 ingress:
   host: localhost

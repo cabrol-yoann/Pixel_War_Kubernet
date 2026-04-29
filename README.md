@@ -19,29 +19,111 @@ Le projet repose sur une architecture microservices :
 - GitHub Actions (CI/CD)
 - Self-hosted Runner (déploiement local automatique)
 
+                        ┌────────────────────────────┐
+                        │       GitHub Push          │
+                        └────────────┬───────────────┘
+                                     │
+                                     ▼
+                        ┌────────────────────────────┐
+                        │   GitHub Actions (CI)      │
+                        │ - Build Docker images      │
+                        │ - Push Docker Hub          │
+                        └────────────┬───────────────┘
+                                     │
+                                     ▼
+                        ┌────────────────────────────┐
+                        │ Self-hosted Runner (CD)    │
+                        │ - Execute deploy locally   │
+                        └────────────┬───────────────┘
+                                     │
+                                     ▼
+                        ┌────────────────────────────┐
+                        │     Helm Deployment        │
+                        │ - Backend                  │
+                        │ - Frontend                 │
+                        │ - Redis                    │
+                        └────────────┬───────────────┘
+                                     │
+                                     ▼
+                        ┌────────────────────────────┐
+                        │ Kubernetes (Kind Cluster)  │
+                        │                            │
+                        │  ┌──────────────┐          │
+                        │  │ Frontend     │          │
+                        │  └──────────────┘          │
+                        │  ┌──────────────┐          │
+                        │  │ Backend      │          │
+                        │  └──────────────┘          │
+                        │  ┌──────────────┐          │
+                        │  │ Redis        │          │
+                        │  └──────────────┘          │
+                        │                            │
+                        │ Ingress NGINX (8080)       │
+                        └────────────────────────────┘
+                                     │
+                                     ▼
+                        http://localhost:8080
+
 ---
+
+## Architecture globale (flux CI/CD)
+
+```text
+GitHub Push
+   ↓
+GitHub Actions (CI)
+   ↓
+Docker Hub (images)
+   ↓
+Self-hosted Runner
+   ↓
+Helm Deploy
+   ↓
+Kubernetes (Kind cluster)
+   ↓
+Pixel War running (Frontend + Backend + Redis)
+```
 
 ## Pipeline CI/CD
 
 ### CI (GitHub Actions – Cloud)
 
-À chaque push sur `main` :
+- Build des images Docker (backend + frontend)
+- Push sur Docker Hub
+- Tag basé sur commit SHA
 
-1. Checkout du code
-2. Build des images Docker :
-   - backend
-   - frontend
-3. Push sur Docker Hub
-
----
 
 ### CD (Self-hosted Runner local)
 
-Sur la machine locale :
+- Déclenchement automatique après CI
+- Vérification du cluster Kubernetes (Kind)
+- Déploiement via Helm
+- Mise à jour des pods automatiquement
 
-1. Détection du runner GitHub Actions
-2. Déploiement sur cluster Kind
-3. Installation / mise à jour de l’application via Helm
+## Self-hosted Runner
+
+Un runner GitHub Actions est installé localement pour permettre le déploiement automatique sur le cluster Kind.
+
+## Configuration du CD (Self-hosted Runner)
+
+Le déploiement continu (CD) est réalisé via un runner GitHub Actions auto-hébergé sur la machine locale.
+
+### Rôle du self-hosted runner
+
+- Exécute les jobs de déploiement GitHub Actions en local
+- Accède directement au cluster Kubernetes Kind
+- Déploie l’application via Helm
+
+---
+
+## Technologies utilisées
+- Kubernetes (Kind)
+- Docker
+- Helm
+- GitHub Actions
+- Node.js
+- Redis
+- Ingress NGINX
 
 ---
 
@@ -83,17 +165,6 @@ Contenu du chart Helm :
 
 ---
 
-## Sécurité
-
-Le projet implémente plusieurs mécanismes de sécurité :
-
-Secrets Kubernetes pour les mots de passe Redis
-ConfigMaps pour la configuration non sensible
-Aucune donnée sensible stockée dans Git
-NetworkPolicies pour contrôler les communications internes
-
----
-
 ## Configuration
 
 ConfigMap backend
@@ -113,13 +184,51 @@ pixelwar-frontend
 
 ---
 
-## Self-hosted Runner
+### Pré-requis
 
-Un runner GitHub Actions est installé localement pour permettre le déploiement automatique sur le cluster Kind.
+- Kubernetes Kind installé et opérationnel
+- kubectl configuré sur la machine
+- Helm installé
+- Runner GitHub connecté au repository
 
 ---
 
-Lancer le projet localement
+### Déploiement automatique
+
+Lors d’un push sur la branche `main` :
+
+1. GitHub Actions construit et pousse les images Docker
+2. Le self-hosted runner récupère le job CD
+3. Le runner exécute :
+
+```bash
+kubectl get nodes
+helm upgrade --install pixelwar ./helm -n pixelwar --create-namespace
+```
+
+---
+
+### Accès au cluster local
+
+Le cluster Kind est accessible via kubeconfig local :
+
+```bash
+kubectl config current-context
+kubectl get pods -n pixelwar
+```
+
+---
+
+### Ingress et exposition
+
+Le trafic est exposé via Ingress NGINX :
+
+Frontend accessible via http://localhost
+Backend exposé via service interne Kubernetes 
+
+---
+
+## Lancer le projet localement
 
 1. Créer le cluster
 
@@ -140,16 +249,67 @@ git clone <repo-url>
 cd pixel_war
 ```
 
+4. Déploiement complet
+
+Une seule commande permet de tout déployer :
+
+```bash
+helm upgrade --install pixelwar ./helm -n pixelwar --create-namespace
+```
+
+5. Accès à l'application (port forwarding)
+
+Comme nous utilisons un cluster local Kind, l’accès au frontend passe par l’Ingress NGINX.
+
+Pour exposer l’application sur la machine locale, nous utilisons un port-forward.
+
+```bash
+kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8080:80
+```
+
 ---
 
-## Technologies utilisées
-- Kubernetes (Kind)
-- Docker
-- Helm
-- GitHub Actions
-- Node.js
-- Redis
-- Ingress NGINX
+## Explication des ressources Kubernetes
+
+### Deployment
+Permet de gérer le cycle de vie des pods (frontend, backend, redis).  
+Il assure le redémarrage automatique et la scalabilité.
+
+---
+
+### ConfigMap
+Stocke les variables de configuration non sensibles :
+- REDIS_HOST
+- REDIS_PORT
+
+---
+
+### Secret
+Stocke les données sensibles comme le mot de passe Redis.  
+Les données sont encodées en base64 et injectées dans les pods. (Pas la meilleur méthode)
+
+---
+
+### Ingress
+Expose l’application à l’extérieur du cluster via un point d’entrée unique (port 8080 en local).
+
+---
+
+### PersistentVolumeClaim (Redis)
+Permet de stocker les données Redis de manière persistante même si le pod redémarre.
+
+---
+
+## Sécurité
+
+Le projet applique une approche DevOps sécurisée :
+
+- Secrets Kubernetes pour les mots de passe Redis
+- Injection des secrets via GitHub Secrets (CI/CD)
+- Aucune donnée sensible dans Git
+- ConfigMaps pour les données non sensibles
+- Séparation stricte configuration / secrets
+- NetworkPolicies pour contrôler les flux réseau
 
 ---
 
@@ -159,3 +319,12 @@ cd pixel_war
 - Debug des erreurs CreateContainerConfigError
 - Synchronisation CI/CD + cluster local
 - Configuration Helm multi-environnements
+
+---
+
+## Améliorations possibles
+
+- Ajout de monitoring avec Prometheus + Grafana
+- Déploiement sur cloud (AWS / GCP / Azure)
+- Séparation des environnements (dev / prod)
+- Sécurisation avancée des secrets (Sealed Secrets / Vault)
