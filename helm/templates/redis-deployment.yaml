@@ -27,11 +27,14 @@ spec:
             - "--appendonly"
             - "yes"
             - "--requirepass"
-            - "changemoi"
+            - "passsword123"
 
           env:
             - name: REDIS_PASSWORD
-              value: "changemoi"
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: password
 
           volumeMounts:
             - name: redis-data
