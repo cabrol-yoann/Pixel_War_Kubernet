@@ -14,6 +14,9 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+
     steps:
       # -------------------------
       # CHECKOUT CODE
@@ -35,7 +38,10 @@ jobs:
       # -------------------------
       - name: Set image tag
         id: tag
-        run: echo "TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
+        run: |
+          TAG=${GITHUB_SHA::7}
+          echo "TAG=$TAG" >> $GITHUB_ENV
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
 
       # -------------------------
       # BUILD/PUSH BACKEND
@@ -51,7 +57,7 @@ jobs:
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/$BACKEND_IMAGE:latest
 
       # -------------------------
-      # PUSH/BUILD  FRONTEND
+      # BUILD/PUSH FRONTEND
       # -------------------------
       - name: Build frontend image
         run: |
@@ -69,27 +75,12 @@ jobs:
           echo "Backend: ${{ secrets.DOCKERHUB_USERNAME }}/$BACKEND_IMAGE:$TAG"
           echo "Frontend: ${{ secrets.DOCKERHUB_USERNAME }}/$FRONTEND_IMAGE:$TAG"
 
-  # bootstrap:
-  #   needs: build-and-push
-  #   runs-on: self-hosted
-
-  #   steps:
-  #     - name: Create Kind cluster
-  #       shell: pwsh
-  #       run: |
-  #         kind get clusters | Select-String "pixelwar-cluster"
-  #         if ($LASTEXITCODE -ne 0) {
-  #           kind create cluster --config ./k8s/kind-config.yaml
-  #         }
-
-  #     - name: Install Ingress Nginx
-  #       shell: pwsh
-  #       run: |
-  #         kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.2/deploy/static/provider/cloud/deploy.yaml
-
   deploy:
     needs: [build-and-push]
     runs-on: self-hosted
+
+    env:
+      TAG: ${{ needs.build-and-push.outputs.tag }}
 
     steps:
       - name: Checkout code
@@ -102,14 +93,6 @@ jobs:
         shell: pwsh
         run: kubectl get nodes
 
-      - name: Deploy Helm
-        shell: pwsh
-        run: |
-          helm upgrade --install pixelwar ./helm `
-            --namespace pixelwar `
-            --create-namespace `
-            --set redis.auth.password=${{ secrets.REDIS_PASSWORD }}
-
       # -------------------------
       # HELM DEPLOY
       # -------------------------
@@ -119,8 +102,8 @@ jobs:
           helm upgrade --install pixelwar ./helm `
             --namespace pixelwar `
             --create-namespace `
-            --set backend.image=${{ secrets.DOCKERHUB_USERNAME }}/pixelwar-backend:latest `
-            --set frontend.image=${{ secrets.DOCKERHUB_USERNAME }}/pixelwar-frontend:latest
+            --set backend.image=${{ secrets.DOCKERHUB_USERNAME }}/pixelwar-backend:${{ env.TAG }} `
+            --set frontend.image=${{ secrets.DOCKERHUB_USERNAME }}/pixelwar-frontend:${{ env.TAG }}
 
       # -------------------------
       # CHECK DEPLOYMENT
