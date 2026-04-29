@@ -90,7 +90,9 @@ Pixel War running (Frontend + Backend + Redis)
 
 - Build des images Docker (backend + frontend)
 - Push sur Docker Hub
-- Tag basé sur commit SHA
+- Tag basé sur commit SHA (images immuables)
+- Chaque build génère une image unique (ex: pixelwar-backend:abc1234)
+- Le déploiement Helm utilise ce tag pour garantir traçabilité et reproductibilité
 
 
 ### CD (Self-hosted Runner local)
@@ -175,6 +177,47 @@ password (encodé base64 via Kubernetes Secret)
 
 ---
 
+### Gestion des ressources
+
+Chaque container dispose de limites et de demandes de ressources :
+
+CPU requests : garantit un minimum de ressources
+CPU limits : empêche la surconsommation
+Memory requests / limits : contrôle de la mémoire utilisée
+
+Cela permet une meilleure stabilité du cluster et une répartition optimale des ressources.
+
+---
+
+### Résilience et haute disponibilité
+
+L'application est configurée pour être résiliente et tolérante aux pannes :
+
+Liveness probes : redémarrage automatique des containers en cas de blocage
+Readiness probes : gestion du trafic uniquement lorsque le pod est prêt
+Redémarrage automatique des pods via Kubernetes
+Réplication des pods (plusieurs instances backend/frontend)
+
+Ces mécanismes garantissent la continuité de service en cas de défaillance.
+
+---
+
+### Scalabilité automatique (HPA)
+
+Le projet utilise un Horizontal Pod Autoscaler :
+
+Scaling automatique basé sur l’utilisation CPU
+Augmentation du nombre de pods en cas de charge
+Réduction automatique lorsque la charge diminue
+
+Exemple :
+
+minReplicas : 2
+maxReplicas : 5
+target CPU : 70%
+
+---
+
 ## Docker
 
 Les images sont construites et publiées sur Docker Hub :
@@ -236,10 +279,12 @@ Backend exposé via service interne Kubernetes
 kind create cluster --config ./k8s/kind-config.yaml
 ```
   
-2. Installer ingress
+2. Installer dépendance
 
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.2/deploy/static/provider/cloud/deploy.yaml
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+kubectl patch deployment metrics-server -n kube-system --type='json' -p='[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
 ```
 
 3. Cloner le repo
@@ -300,6 +345,27 @@ Permet de stocker les données Redis de manière persistante même si le pod red
 
 ---
 
+### Liveness & Readiness Probes
+
+Permettent de surveiller l’état des applications :
+
+Liveness probe : redémarre le container si celui-ci ne répond plus
+Readiness probe : empêche l’envoi de trafic vers un pod non prêt
+
+---
+
+### Horizontal Pod Autoscaler (HPA)
+
+Permet d’adapter automatiquement le nombre de pods en fonction de la charge.
+
+---
+
+### Resources (CPU / Memory)
+
+Permet de définir les ressources allouées à chaque container afin d’éviter les abus et garantir la stabilité du cluster.
+
+---
+
 ## Sécurité
 
 Le projet applique une approche DevOps sécurisée :
@@ -310,6 +376,7 @@ Le projet applique une approche DevOps sécurisée :
 - ConfigMaps pour les données non sensibles
 - Séparation stricte configuration / secrets
 - NetworkPolicies pour contrôler les flux réseau
+- Limitation des ressources pour éviter les attaques par surcharge (DoS)
 
 ---
 
