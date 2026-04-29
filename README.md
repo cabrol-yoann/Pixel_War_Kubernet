@@ -11,7 +11,7 @@ Le projet a été entièrement conteneurisé et déployé sur un cluster Kuberne
 
 Le projet repose sur une architecture microservices :
 
-- Frontend (React / Web UI)
+- Frontend (html/css/js)
 - Backend (API Node.js / Express)
 - Base de données (Redis)
 - Kubernetes (Kind local cluster)
