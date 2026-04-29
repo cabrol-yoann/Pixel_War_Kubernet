@@ -26,8 +26,6 @@ spec:
           args:
             - "--appendonly"
             - "yes"
-            - "--requirepass"
-            - "passsword123"
 
           env:
             - name: REDIS_PASSWORD

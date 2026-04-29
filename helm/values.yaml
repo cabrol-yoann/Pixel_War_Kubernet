@@ -7,7 +7,7 @@ redis:
     size: 1Gi
 
   auth:
-    enabled: true
+    password: ""
 
 backend:
   image: flyzeur163/pixelwar-backend

@@ -102,6 +102,14 @@ jobs:
         shell: pwsh
         run: kubectl get nodes
 
+      - name: Deploy Helm
+        shell: pwsh
+        run: |
+          helm upgrade --install pixelwar ./helm `
+            --namespace pixelwar `
+            --create-namespace `
+            --set redis.auth.password=${{ secrets.REDIS_PASSWORD }}
+
       # -------------------------
       # HELM DEPLOY
       # -------------------------
