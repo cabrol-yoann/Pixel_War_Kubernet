@@ -23,6 +23,7 @@ spec:
             port: {{ .Values.frontend.port }}
           initialDelaySeconds: 5
           periodSeconds: 5
+          
 
         livenessProbe:
           httpGet:
