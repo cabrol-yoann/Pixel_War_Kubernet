@@ -20,6 +20,30 @@ spec:
           image: {{ .Values.backend.image }}
           imagePullPolicy: Always
 
+          readinessProbe:
+          httpGet:
+            path: /grid
+            port: {{ .Values.backend.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /grid
+              port: {{ .Values.backend.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+
+          resources:
+            requests:
+              cpu: {{ .Values.backend.resources.requests.cpu }}
+              memory: {{ .Values.backend.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.backend.resources.limits.cpu }}
+              memory: {{ .Values.backend.resources.limits.memory }}
+
           ports:
             - containerPort: {{ .Values.backend.port }}
 
