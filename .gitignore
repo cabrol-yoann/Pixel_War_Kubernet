@@ -56,3 +56,8 @@ Thumbs.db
 *.lock
 charts/*/charts
 charts/*/tmp
+
+# =========================
+# SECRETS (IMPORTANT)
+# =========================
+helm/templates/redis-secret.yaml
